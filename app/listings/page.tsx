@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { MapPin, Users, Filter, Star } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-export default function ListingsPage() {
+function ListingsContent() {
   const searchParams = useSearchParams()
   const categoryParam = searchParams.get('category')
   const searchParam = searchParams.get('search')
@@ -249,5 +249,13 @@ export default function ListingsPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ListingsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">Loading...</p></div>}>
+      <ListingsContent />
+    </Suspense>
   )
 }
