@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { MapPin, Users, Calendar, DollarSign, Star, ArrowLeft } from 'lucide-react'
@@ -14,11 +14,7 @@ export default function ListingDetailPage({ params }: { params: { slug: string }
   const [selectedImage, setSelectedImage] = useState(0)
   const router = useRouter()
 
-  useEffect(() => {
-    fetchListing()
-  }, [params.slug])
-
-  const fetchListing = async () => {
+  const fetchListing = useCallback(async () => {
     try {
       const { data: listingData, error: listingError } = await supabase
         .from('listings')
@@ -50,7 +46,13 @@ export default function ListingDetailPage({ params }: { params: { slug: string }
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.slug])
+
+  useEffect(() => {
+    fetchListing()
+  }, [fetchListing])
+
+  
 
   const averageRating = reviews.length > 0
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -27,11 +27,7 @@ export default function EditListingPage({ params }: { params: { id: string } }) 
     featured: false,
   })
 
-  useEffect(() => {
-    checkAuthAndFetchData()
-  }, [params.id])
-
-  const checkAuthAndFetchData = async () => {
+  const checkAuthAndFetchData = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
       router.push('/auth/login')
@@ -94,7 +90,13 @@ export default function EditListingPage({ params }: { params: { id: string } }) 
     })
 
     setLoading(false)
-  }
+  }, [router, params.id])
+
+  useEffect(() => {
+    checkAuthAndFetchData()
+  }, [checkAuthAndFetchData])
+
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

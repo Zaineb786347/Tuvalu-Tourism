@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Calendar, Users, DollarSign, CreditCard } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -17,21 +17,16 @@ export default function BookingPage({ params }: { params: { id: string } }) {
   const [specialRequests, setSpecialRequests] = useState('')
   const router = useRouter()
 
-  useEffect(() => {
-    checkAuth()
-    fetchListing()
-  }, [params.id])
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
       router.push('/auth/login')
       return
     }
     setUser(session.user)
-  }
+  }, [router])
 
-  const fetchListing = async () => {
+  const fetchListing = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('listings')
@@ -50,7 +45,14 @@ export default function BookingPage({ params }: { params: { id: string } }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id])
+
+  useEffect(() => {
+    checkAuth()
+    fetchListing()
+  }, [checkAuth, fetchListing])
+
+  
 
   const calculateTotal = () => {
     if (!startDate || !endDate) return listing?.price || 0

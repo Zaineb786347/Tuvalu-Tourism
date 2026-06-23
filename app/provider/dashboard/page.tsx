@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Plus, Eye, Edit, TrendingUp, Calendar, DollarSign } from 'lucide-react'
@@ -20,34 +20,7 @@ export default function ProviderDashboard() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  useEffect(() => {
-    checkAuthAndFetchData()
-  }, [])
-
-  const checkAuthAndFetchData = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      router.push('/auth/login')
-      return
-    }
-
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', session.user.id)
-      .single()
-
-    if (profileData?.role !== 'provider' && profileData?.role !== 'admin') {
-      router.push('/listings')
-      return
-    }
-
-    setUser(session.user)
-    setProfile(profileData)
-    await fetchProviderData(session.user.id)
-  }
-
-  const fetchProviderData = async (userId: string) => {
+  const fetchProviderData = useCallback(async (userId: string) => {
     try {
       // Fetch listings
       const { data: listingsData } = await supabase
@@ -94,7 +67,37 @@ export default function ProviderDashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  const checkAuthAndFetchData = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      router.push('/auth/login')
+      return
+    }
+
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', session.user.id)
+      .single()
+
+    if (profileData?.role !== 'provider' && profileData?.role !== 'admin') {
+      router.push('/listings')
+      return
+    }
+
+    setUser(session.user)
+    setProfile(profileData)
+    await fetchProviderData(session.user.id)
+  }, [router, fetchProviderData])
+
+  useEffect(() => {
+    checkAuthAndFetchData()
+  }, [checkAuthAndFetchData])
+
+
+  
 
   if (loading) {
     return (

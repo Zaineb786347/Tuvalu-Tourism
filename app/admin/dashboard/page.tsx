@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Users, Home, Calendar, DollarSign, TrendingUp, AlertCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -21,34 +21,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  useEffect(() => {
-    checkAuthAndFetchData()
-  }, [])
-
-  const checkAuthAndFetchData = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      router.push('/auth/login')
-      return
-    }
-
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', session.user.id)
-      .single()
-
-    if (profileData?.role !== 'admin') {
-      router.push('/listings')
-      return
-    }
-
-    setUser(session.user)
-    setProfile(profileData)
-    await fetchAdminData()
-  }
-
-  const fetchAdminData = async () => {
+  const fetchAdminData = useCallback(async () => {
     try {
       // Fetch all users
       const { data: usersData, count: usersCount } = await supabase
@@ -109,7 +82,37 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  const checkAuthAndFetchData = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      router.push('/auth/login')
+      return
+    }
+
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', session.user.id)
+      .single()
+
+    if (profileData?.role !== 'admin') {
+      router.push('/listings')
+      return
+    }
+
+    setUser(session.user)
+    setProfile(profileData)
+    await fetchAdminData()
+  }, [router, fetchAdminData])
+
+  useEffect(() => {
+    checkAuthAndFetchData()
+  }, [checkAuthAndFetchData])
+
+
+  
 
   if (loading) {
     return (

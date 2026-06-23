@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Menu, X, User, LogOut } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
@@ -11,6 +11,28 @@ export default function Navbar() {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const router = useRouter()
+
+  const fetchProfile = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+    setProfile(data)
+  }, [])
+
+  const checkUser = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    setUser(session?.user ?? null)
+    if (session?.user) {
+      fetchProfile(session.user.id)
+    }
+  }, [fetchProfile])
+
+  const handleSignOut = useCallback(async () => {
+    await supabase.auth.signOut()
+    router.push('/')
+  }, [router])
 
   useEffect(() => {
     checkUser()
@@ -26,29 +48,9 @@ export default function Navbar() {
     return () => {
       authListener.subscription.unsubscribe()
     }
-  }, [])
+  }, [checkUser, fetchProfile])
 
-  const checkUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    setUser(session?.user ?? null)
-    if (session?.user) {
-      fetchProfile(session.user.id)
-    }
-  }
-
-  const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-    setProfile(data)
-  }
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/')
-  }
+  
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">

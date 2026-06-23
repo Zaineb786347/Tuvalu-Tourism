@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Calendar, MapPin, Users, DollarSign, Star } from 'lucide-react'
@@ -15,21 +15,7 @@ export default function MyBookingsPage() {
   const [submittingReview, setSubmittingReview] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
-    checkAuthAndFetchBookings()
-  }, [filter])
-
-  const checkAuthAndFetchBookings = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      router.push('/auth/login')
-      return
-    }
-
-    await fetchBookings(session.user.id)
-  }
-
-  const fetchBookings = async (userId: string) => {
+  const fetchBookings = useCallback(async (userId: string) => {
     setLoading(true)
     try {
       let query = supabase
@@ -65,7 +51,23 @@ export default function MyBookingsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filter])
+
+  const checkAuthAndFetchBookings = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      router.push('/auth/login')
+      return
+    }
+
+    await fetchBookings(session.user.id)
+  }, [router, fetchBookings])
+
+  useEffect(() => {
+    checkAuthAndFetchBookings()
+  }, [checkAuthAndFetchBookings])
+
+  
 
   const getStatusColor = (status: string) => {
     switch (status) {

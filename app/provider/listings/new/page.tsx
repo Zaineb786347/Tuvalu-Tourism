@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -26,11 +26,7 @@ export default function NewListingPage() {
     featured: false,
   })
 
-  useEffect(() => {
-    checkAuthAndFetchCategories()
-  }, [])
-
-  const checkAuthAndFetchCategories = async () => {
+  const checkAuthAndFetchCategories = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
       router.push('/auth/login')
@@ -57,7 +53,13 @@ export default function NewListingPage() {
       .order('name')
 
     setCategories(categoriesData || [])
-  }
+  }, [router])
+
+  useEffect(() => {
+    checkAuthAndFetchCategories()
+  }, [checkAuthAndFetchCategories])
+
+  
 
   const generateSlug = (title: string) => {
     return title

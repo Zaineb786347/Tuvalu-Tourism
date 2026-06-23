@@ -72,11 +72,12 @@ cd "ai tourism"
 npm install
 ```
 
-### 3. Set Up Supabase
+### 3. Set Up Supabase (Database)
 
-1. Create a new Supabase project at [supabase.com](https://supabase.com)
-2. Go to SQL Editor and run the schema from `supabase/schema.sql`
-3. Get your API credentials from Settings > API
+1. Create a new Supabase project at https://supabase.com
+2. In the Supabase dashboard, open SQL Editor and run: [supabase/schema.sql](supabase/schema.sql)
+3. Still in SQL Editor, optionally seed demo data by editing your email and running: [supabase/seed.sql](supabase/seed.sql)
+4. Get your API credentials from Settings → API
 
 ### 4. Set Up Stripe
 
@@ -86,20 +87,12 @@ npm install
 
 ### 5. Environment Variables
 
-Create a `.env.local` file in the root directory:
+Copy `.env.local.example` to `.env.local` and fill your values (Supabase Settings → API):
 
 ```env
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-
-# Stripe Configuration
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
-
-# App Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.ref.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=ey...
+SUPABASE_SERVICE_ROLE_KEY=ey...
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 

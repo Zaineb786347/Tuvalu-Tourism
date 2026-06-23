@@ -4,6 +4,23 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Create profile row automatically when a new auth user is created
+-- Function runs with elevated privileges to bypass RLS safely
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name, role, phone, avatar_url)
+  VALUES (NEW.id, NEW.email, COALESCE(NEW.raw_user_meta_data->>'full_name', ''), COALESCE((NEW.raw_user_meta_data->>'role')::text, 'user'), COALESCE(NEW.raw_user_meta_data->>'phone', ''), NULL)
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+AFTER INSERT ON auth.users
+FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
 -- Create profiles table
 CREATE TABLE profiles (
   id UUID REFERENCES auth.users(id) PRIMARY KEY,
@@ -154,6 +171,12 @@ CREATE POLICY "Public profiles are viewable by everyone"
 CREATE POLICY "Users can update own profile"
   ON profiles FOR UPDATE
   USING (auth.uid() = id);
+
+-- Allow service role to insert (for trigger function)
+CREATE POLICY "Service role can insert profiles"
+  ON profiles FOR INSERT
+  TO service_role
+  WITH CHECK (true);
 
 -- Categories policies
 CREATE POLICY "Categories are viewable by everyone"

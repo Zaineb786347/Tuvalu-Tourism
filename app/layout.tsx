@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: 'Tuvalu Tourism - Discover Eco-Friendly Paradise',
   description: 'Book eco-attractions, sustainable tours, and authentic homestays in Tuvalu. Experience sustainable tourism in the Pacific.',
   keywords: 'Tuvalu, tourism, eco-tourism, homestays, sustainable travel, Pacific Islands',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({

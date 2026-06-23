@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react'
@@ -12,11 +12,27 @@ export default function ProviderListingsPage() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  useEffect(() => {
-    checkAuthAndFetchListings()
+  const fetchListings = useCallback(async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          categories (name, slug)
+        `)
+        .eq('provider_id', userId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setListings(data || [])
+    } catch (error) {
+      console.error('Error fetching listings:', error)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
-  const checkAuthAndFetchListings = async () => {
+  const checkAuthAndFetchListings = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
       router.push('/auth/login')
@@ -36,27 +52,14 @@ export default function ProviderListingsPage() {
 
     setUser(session.user)
     await fetchListings(session.user.id)
-  }
+  }, [router, fetchListings])
 
-  const fetchListings = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('listings')
-        .select(`
-          *,
-          categories (name, slug)
-        `)
-        .eq('provider_id', userId)
-        .order('created_at', { ascending: false })
+  useEffect(() => {
+    checkAuthAndFetchListings()
+  }, [checkAuthAndFetchListings])
 
-      if (error) throw error
-      setListings(data || [])
-    } catch (error) {
-      console.error('Error fetching listings:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+
+  
 
   const toggleActive = async (listingId: string, currentStatus: boolean) => {
     try {

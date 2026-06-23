@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Tuvalu Tourism</title>
+  <rect x="2" y="2" width="60" height="60" rx="12" fill="#1e90ff"/>
+  <path d="M6 46c6 0 10-6 16-6s10 6 16 6 10-6 16-6v12H6V46z" fill="#ffffff" opacity="0.9"/>
+  <circle cx="48" cy="16" r="6" fill="#ffd166"/>
+  <path d="M18 30c3-2 6-3 10-3 6 0 12 3 18 3" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+</svg>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { MapPin, Users, Filter, Star } from 'lucide-react'
@@ -18,24 +18,12 @@ export default function ListingsPage() {
   const [priceRange, setPriceRange] = useState([0, 1000])
   const [searchQuery, setSearchQuery] = useState(searchParam || '')
 
-  useEffect(() => {
-    fetchCategories()
-    fetchListings()
-  }, [selectedCategory])
-
-  useEffect(() => {
-    // Update search query when URL param changes
-    if (searchParam) {
-      setSearchQuery(searchParam)
-    }
-  }, [searchParam])
-
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     const { data } = await supabase.from('categories').select('*')
     setCategories(data || [])
-  }
+  }, [])
 
-  const fetchListings = async () => {
+  const fetchListings = useCallback(async () => {
     setLoading(true)
     try {
       let query = supabase
@@ -69,7 +57,21 @@ export default function ListingsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedCategory])
+
+  useEffect(() => {
+    fetchCategories()
+    fetchListings()
+  }, [fetchCategories, fetchListings])
+
+  useEffect(() => {
+    // Update search query when URL param changes
+    if (searchParam) {
+      setSearchQuery(searchParam)
+    }
+  }, [searchParam])
+
+  
 
   const filteredListings = listings.filter(listing => {
     const matchesPrice = listing.price >= priceRange[0] && listing.price <= priceRange[1]
