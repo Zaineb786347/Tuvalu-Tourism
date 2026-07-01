@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: 'Book eco-attractions, sustainable tours, and authentic homestays in Tuvalu. Experience sustainable tourism in the Pacific.',
   keywords: 'Tuvalu, tourism, eco-tourism, homestays, sustainable travel, Pacific Islands',
   icons: {
-    icon: '/favicon.svg',
+    icon: `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/favicon.svg`,
   },
 }
 
